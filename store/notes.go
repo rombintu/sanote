@@ -25,6 +25,24 @@ func (s *Store) CreateNote(note models.Note) error {
 	return nil
 }
 
+func (s *Store) GetNoteById(_id primitive.ObjectID) (models.Note, error) {
+	ctx, err := s.Open()
+	if err != nil {
+		return models.Note{}, err
+	}
+	defer s.Close(ctx)
+
+	var note models.Note
+	if err := s.Database.Collection(notesColl).FindOne(
+		ctx,
+		bson.M{"_id", _id},
+	).Decode(&note); err != nil {
+		return models.Note{}, err
+	}
+
+	return note, nil
+}
+
 func (s *Store) GetNotesByAuthor(author string) ([]models.Note, error) {
 	ctx, err := s.Open()
 	if err != nil {
