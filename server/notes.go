@@ -24,24 +24,24 @@ func (api *API) GetNotesByAuthor() gin.HandlerFunc {
 	}
 }
 
-// GET (GET)
-func (api *API) GetNoteById() gin.HandlerFunc {
+// GET (GET) ID
+func (api *API) GetNotesById() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_id, err := primitive.ObjectIDFromHex(c.Query("_id"))
+		id, err := primitive.ObjectIDFromHex(c.Query("_id"))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, models.REST{
 				Message: err.Error(), Error: 1},
 			)
 			return
 		}
-		note, err := api.Store.GetNoteById(_id)
+		notes, err := api.Store.GetNoteById(id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, models.REST{
 				Message: err.Error(), Error: 1},
 			)
 			return
 		}
-		c.JSON(http.StatusOK, note)
+		c.JSON(http.StatusOK, notes)
 	}
 }
 

@@ -25,22 +25,27 @@ func (s *Store) CreateNote(note models.Note) error {
 	return nil
 }
 
-func (s *Store) GetNoteById(_id primitive.ObjectID) (models.Note, error) {
+func (s *Store) GetNoteById(id primitive.ObjectID) ([]models.Note, error) {
 	ctx, err := s.Open()
 	if err != nil {
-		return models.Note{}, err
+		return []models.Note{}, err
 	}
 	defer s.Close(ctx)
 
-	var note models.Note
-	if err := s.Database.Collection(notesColl).FindOne(
+	cur, err := s.Database.Collection(notesColl).Find(
 		ctx,
-		bson.M{"_id", _id},
-	).Decode(&note); err != nil {
-		return models.Note{}, err
+		bson.M{"_id": id},
+	)
+	if err != nil {
+		return []models.Note{}, err
 	}
+	defer cur.Close(ctx)
 
-	return note, nil
+	var notes []models.Note
+	if err := cur.All(ctx, &notes); err != nil {
+		return []models.Note{}, err
+	}
+	return notes, nil
 }
 
 func (s *Store) GetNotesByAuthor(author string) ([]models.Note, error) {
@@ -52,7 +57,7 @@ func (s *Store) GetNotesByAuthor(author string) ([]models.Note, error) {
 
 	cur, err := s.Database.Collection(notesColl).Find(
 		ctx,
-		bson.D{{"author", author}},
+		bson.M{"author": author},
 	)
 	if err != nil {
 		return []models.Note{}, err

@@ -50,7 +50,7 @@ func (api *API) ConfigureRouter() {
 
 	api.Router.GET("/", api.Index())
 
-	api.Router.GET("/note/id", api.GetNoteById())   // ?_id=?
+	api.Router.GET("/note/id", api.GetNotesById())  // ?_id=?
 	api.Router.GET("/note", api.GetNotesByAuthor()) // ?author=?
 	api.Router.POST("/note", api.CreateNote())
 	api.Router.PUT("/note", api.UpdateNoteById())
