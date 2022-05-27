@@ -11,6 +11,10 @@ import (
 )
 
 const (
+	databaseSanote string = "sanote"
+)
+
+const (
 	notesColl string = "notes"
 	usersColl string = "users"
 )
@@ -24,28 +28,34 @@ const (
 type Store struct {
 	Driver   *mongo.Client
 	Database *mongo.Database
+	Options  *options.ClientOptions
 }
 
 func NewStore() *Store {
-	return &Store{}
+	return &Store{
+		Options: getOptions(),
+	}
 }
 
-// mongodb://<username>:<password>@<host>:<port>
-func (s *Store) Open() (context.Context, error) {
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s",
+func getOptions() *options.ClientOptions {
+	return options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s",
 		tools.GetEnvOrDefault("MONGO_USER", "mongo"),
 		tools.GetEnvOrDefault("MONGO_PASS", "mongo"),
 		tools.GetEnvOrDefault("MONGO_HOST", "localhost"),
 		tools.GetEnvOrDefault("MONGO_PORT", "27017"),
 	),
 	)
+}
+
+// mongodb://<username>:<password>@<host>:<port>
+func (s *Store) Open() (context.Context, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	client, err := mongo.Connect(ctx, clientOptions)
+	client, err := mongo.Connect(ctx, s.Options)
 	if err != nil {
 		return nil, err
 	}
 	s.Driver = client
-	s.Database = s.Driver.Database("sanote")
+	s.Database = s.Driver.Database(databaseSanote)
 	return ctx, nil
 }
 

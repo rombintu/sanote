@@ -2,7 +2,9 @@ package server
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rombintu/sanote/models"
 	"github.com/rombintu/sanote/store"
@@ -31,6 +33,21 @@ func (api *API) Start() error {
 }
 
 func (api *API) ConfigureRouter() {
+	if tools.GetEnvOrDefault("DEV", "false") == "true" {
+		api.Router.Use(cors.New(cors.Config{
+			AllowOrigins:     []string{"*"},
+			AllowMethods:     []string{"GET", "POST", "DELETE", "PUT", "PATCH"},
+			AllowHeaders:     []string{"Origin"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			AllowOriginFunc: func(origin string) bool {
+				return origin == "*"
+			},
+			MaxAge: 12 * time.Hour,
+		}),
+		)
+	}
+
 	api.Router.GET("/", api.Index())
 
 	api.Router.GET("/note", api.GetNotesByAuthor()) // ?author=?
